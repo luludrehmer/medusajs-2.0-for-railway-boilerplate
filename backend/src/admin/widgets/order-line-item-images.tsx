@@ -25,10 +25,10 @@ type Order = {
 };
 
 type OrderDetailsWidgetProps = {
-  order: Order;
+  data: Order;
 };
 
-export default function OrderLineItemImages({ order }: OrderDetailsWidgetProps) {
+export default function OrderLineItemImages({ data: order }: OrderDetailsWidgetProps) {
   const items = order?.items ?? [];
   const itemsWithImage = items.filter((item) => {
     const meta = item.metadata ?? {};
