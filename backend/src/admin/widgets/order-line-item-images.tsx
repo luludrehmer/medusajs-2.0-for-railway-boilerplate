@@ -7,7 +7,7 @@
  * Zone: order.details.after (Medusa v2 passes { data: AdminOrder })
  */
 
-import type { WidgetConfig } from "@medusajs/admin";
+import { defineWidgetConfig } from "@medusajs/admin-shared";
 
 type OrderItem = {
   id: string;
@@ -128,6 +128,6 @@ const OrderLineItemImages = (props: OrderDetailsWidgetProps) => {
 
 export default OrderLineItemImages;
 
-export const config: WidgetConfig = {
+export const config = defineWidgetConfig({
   zone: "order.details.after",
-};
+});

@@ -14,7 +14,22 @@ export default async function orderPlacedHandler({
     const orderModuleService: IOrderModuleService = container.resolve(Modules.ORDER)
     
     order = await orderModuleService.retrieveOrder(data.id, { relations: ['items', 'summary', 'shipping_address'] })
-    const shippingAddress = await (orderModuleService as any).orderAddressService_.retrieve(order.shipping_address.id)
+
+    // shipping_address pode vir populado pela relation ou como ID
+    let shippingAddress = order.shipping_address
+    if (shippingAddress && typeof shippingAddress === 'object' && 'address_1' in shippingAddress) {
+      // ja populado
+    } else if (shippingAddress?.id) {
+      try {
+        const addrSvc = (orderModuleService as any).orderAddressService_
+        if (addrSvc) shippingAddress = await addrSvc.retrieve(shippingAddress.id)
+      } catch (e) {
+        console.warn('[order-placed] Could not retrieve shipping_address, using fallback', e)
+        shippingAddress = { first_name: '', last_name: '', address_1: '', city: '', province: '', postal_code: '', country_code: 'US' }
+      }
+    } else {
+      shippingAddress = { first_name: '', last_name: '', address_1: '', city: '', province: '', postal_code: '', country_code: 'US' }
+    }
 
     await notificationModuleService.createNotifications({
       to: order.email,
