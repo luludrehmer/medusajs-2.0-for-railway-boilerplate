@@ -145,6 +145,42 @@ export async function deleteLineItem(lineId: string) {
   revalidateTag("cart")
 }
 
+/** Extract preview image URL from line item metadata (art-transform, etc.) */
+function getPreviewUrlFromMetadata(item: any): string | undefined {
+  const meta = (item.metadata ?? {}) as Record<string, unknown>
+  const productConfig = meta.productConfig as Record<string, unknown> | undefined
+  const url =
+    (meta.previewImageUrl as string) ??
+    (meta.preview_image_url as string) ??
+    (productConfig?.previewImageUrl as string) ??
+    (productConfig?.preview_image_url as string)
+  return typeof url === "string" && url.length > 0 && !url.includes("localhost") ? url : undefined
+}
+
+/** Check if line item is digital/art-transform (has download). */
+function isDigitalItem(item: any): boolean {
+  const meta = (item.metadata ?? {}) as Record<string, unknown>
+  const variantTitle = (item.variant?.title as string) || ""
+  return (
+    meta.productType === "digital" ||
+    meta.productType === "Digital" ||
+    meta.variantType === "digital" ||
+    meta.source === "art-transform" ||
+    variantTitle.toLowerCase().includes("digital")
+  )
+}
+
+/** Extract download URL from line item metadata (art-transform, etc.) */
+function getDownloadUrlFromMetadata(item: any): string | undefined {
+  const meta = (item.metadata ?? {}) as Record<string, unknown>
+  const productConfig = meta.productConfig as Record<string, unknown> | undefined
+  const url =
+    (meta.downloadUrl as string) ??
+    (meta.download_url as string) ??
+    (productConfig?.downloadUrl as string)
+  return typeof url === "string" && url.length > 0 && !url.includes("localhost") ? url : undefined
+}
+
 export async function enrichLineItems(
   lineItems:
     | HttpTypes.StoreCartLineItem[]
@@ -180,12 +216,21 @@ export async function enrichLineItems(
     }
 
     // If product and variant are found, enrich the item
+    // Use metadata.previewImageUrl for art-transform (customer image) over product thumbnail
+    const metadataThumbnail = getPreviewUrlFromMetadata(item)
+    const thumbnail = metadataThumbnail ?? item.thumbnail ?? product.thumbnail
+
+    // For digital/art-transform items, add downloadUrl from metadata or previewImageUrl
+    const enrichedVariant = { ...variant, product: omit(product, "variants") }
+    const itemWithVariant = { ...item, variant: enrichedVariant }
+    const downloadUrl =
+      isDigitalItem(itemWithVariant) ? getDownloadUrlFromMetadata(item) || metadataThumbnail : undefined
+
     return {
       ...item,
-      variant: {
-        ...variant,
-        product: omit(product, "variants"),
-      },
+      thumbnail,
+      ...(downloadUrl && { downloadUrl }),
+      variant: enrichedVariant,
     }
   }) as HttpTypes.StoreCartLineItem[]
 

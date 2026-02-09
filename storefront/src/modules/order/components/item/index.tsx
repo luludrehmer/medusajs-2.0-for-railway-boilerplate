@@ -6,11 +6,17 @@ import LineItemPrice from "@modules/common/components/line-item-price"
 import LineItemUnitPrice from "@modules/common/components/line-item-unit-price"
 import Thumbnail from "@modules/products/components/thumbnail"
 
+type EnrichedLineItem = (HttpTypes.StoreCartLineItem | HttpTypes.StoreOrderLineItem) & {
+  downloadUrl?: string
+}
+
 type ItemProps = {
-  item: HttpTypes.StoreCartLineItem | HttpTypes.StoreOrderLineItem
+  item: EnrichedLineItem
 }
 
 const Item = ({ item }: ItemProps) => {
+  const downloadUrl = (item as EnrichedLineItem).downloadUrl
+
   return (
     <Table.Row className="w-full" data-testid="product-row">
       <Table.Cell className="!pl-0 p-4 w-24">
@@ -28,6 +34,16 @@ const Item = ({ item }: ItemProps) => {
         </Text>
         {item.variant && (
           <LineItemOptions variant={item.variant} data-testid="product-variant" />
+        )}
+        {downloadUrl && (
+          <a
+            href={downloadUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover txt-small-medium mt-1 inline-block"
+          >
+            Download artwork
+          </a>
         )}
       </Table.Cell>
 
