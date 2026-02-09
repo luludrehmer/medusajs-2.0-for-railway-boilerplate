@@ -66,6 +66,15 @@ const OrderLineItemImages = (props: OrderDetailsWidgetProps) => {
   const items = extractItems(props);
   const itemsWithImage = items.filter((item) => getPreviewUrl(item));
 
+  // Debug: inspecionar props recebido pelo Admin (abrir order e ver DevTools Console)
+  console.log("[order-line-item-images] DIAG props:", {
+    propsKeys: Object.keys(props),
+    dataKeys: props.data && typeof props.data === "object" ? Object.keys(props.data) : [],
+    itemsCount: items.length,
+    itemsWithImageCount: itemsWithImage.length,
+    firstItemMeta: items[0]?.metadata,
+  });
+
   if (items.length > 0 && itemsWithImage.length === 0) {
     console.warn("[order-line-item-images] DIAG: items exist but none have previewImageUrl", {
       propsKeys: Object.keys(props),
