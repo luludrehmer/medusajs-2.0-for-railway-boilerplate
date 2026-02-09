@@ -67,7 +67,14 @@ export const MINIO_SECRET_KEY = process.env.MINIO_SECRET_KEY;
 export const MINIO_BUCKET = process.env.MINIO_BUCKET; // Optional, if not set bucket will be called: medusa-media
 
 /**
- * (optional) Resend API Key and from Email - do not set if using SendGrid
+ * (optional) Zoho SMTP - same names as Railway vars
+ */
+export const ZOHO_SMTP_USER = process.env.ZOHO_SMTP_USER || process.env.ZOHO_EMAIL;
+export const ZOHO_SMTP_PASS = process.env.ZOHO_SMTP_PASS || process.env.ZOHO_PASSWORD;
+export const ZOHO_SMTP_FROM = process.env.ZOHO_SMTP_FROM || process.env.ZOHO_SMTP_USER || process.env.ZOHO_EMAIL;
+
+/**
+ * (optional) Resend API Key and from Email - do not set if using Zoho
  */
 export const RESEND_API_KEY = process.env.RESEND_API_KEY;
 export const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || process.env.RESEND_FROM;

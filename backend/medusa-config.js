@@ -7,6 +7,9 @@ import {
   DATABASE_URL,
   JWT_SECRET,
   REDIS_URL,
+  ZOHO_SMTP_USER,
+  ZOHO_SMTP_PASS,
+  ZOHO_SMTP_FROM,
   RESEND_API_KEY,
   RESEND_FROM_EMAIL,
   SENDGRID_API_KEY,
@@ -91,11 +94,21 @@ const medusaConfig = {
         }
       }
     }] : []),
-    ...(SENDGRID_API_KEY && SENDGRID_FROM_EMAIL || RESEND_API_KEY && RESEND_FROM_EMAIL ? [{
+    ...(ZOHO_SMTP_USER && ZOHO_SMTP_PASS || SENDGRID_API_KEY && SENDGRID_FROM_EMAIL || RESEND_API_KEY && RESEND_FROM_EMAIL ? [{
       key: Modules.NOTIFICATION,
       resolve: '@medusajs/notification',
       options: {
         providers: [
+          ...(ZOHO_SMTP_USER && ZOHO_SMTP_PASS ? [{
+            resolve: './src/modules/zoho-email-notifications',
+            id: 'zoho',
+            options: {
+              channels: ['email'],
+              user: ZOHO_SMTP_USER,
+              pass: ZOHO_SMTP_PASS,
+              from: ZOHO_SMTP_FROM || ZOHO_SMTP_USER,
+            },
+          }] : []),
           ...(SENDGRID_API_KEY && SENDGRID_FROM_EMAIL ? [{
             resolve: '@medusajs/notification-sendgrid',
             id: 'sendgrid',
