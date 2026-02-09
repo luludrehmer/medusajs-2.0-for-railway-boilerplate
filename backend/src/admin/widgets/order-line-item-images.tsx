@@ -17,6 +17,7 @@ type OrderItem = {
   title?: string;
   quantity?: number;
   metadata?: Record<string, unknown>;
+  detail?: { metadata?: Record<string, unknown> };
 };
 
 type Order = {
@@ -25,16 +26,25 @@ type Order = {
 };
 
 type OrderDetailsWidgetProps = {
-  data: Order;
+  data?: Order;
+  order?: Order;
 };
 
-export default function OrderLineItemImages({ data: order }: OrderDetailsWidgetProps) {
-  const items = order?.items ?? [];
-  const itemsWithImage = items.filter((item) => {
-    const meta = item.metadata ?? {};
-    const url = meta.previewImageUrl ?? meta.preview_image_url;
-    return typeof url === "string" && url.length > 0 && !url.includes("localhost");
-  });
+function getPreviewUrl(item: OrderItem): string | undefined {
+  const meta = item.metadata ?? item.detail?.metadata ?? {};
+  const productConfig = meta.productConfig as Record<string, unknown> | undefined;
+  const url =
+    (meta.previewImageUrl as string) ??
+    (meta.preview_image_url as string) ??
+    (productConfig?.previewImageUrl as string) ??
+    (productConfig?.preview_image_url as string);
+  return typeof url === "string" && url.length > 0 && !url.includes("localhost") ? url : undefined;
+}
+
+export default function OrderLineItemImages({ data, order }: OrderDetailsWidgetProps) {
+  const o = data ?? order;
+  const items = o?.items ?? [];
+  const itemsWithImage = items.filter((item) => getPreviewUrl(item));
 
   if (itemsWithImage.length === 0) return null;
 
@@ -43,8 +53,7 @@ export default function OrderLineItemImages({ data: order }: OrderDetailsWidgetP
       <h3 className="text-sm font-semibold text-gray-900 mb-3">Customer Images</h3>
       <div className="space-y-3">
         {itemsWithImage.map((item) => {
-          const meta = item.metadata ?? {};
-          const url = (meta.previewImageUrl ?? meta.preview_image_url) as string;
+          const url = getPreviewUrl(item)!;
           const title = item.title ?? "Item";
           return (
             <div
