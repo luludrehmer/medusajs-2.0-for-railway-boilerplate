@@ -41,7 +41,7 @@ function getPreviewUrl(item: OrderItem): string | undefined {
   return typeof url === "string" && url.length > 0 && !url.includes("localhost") ? url : undefined;
 }
 
-export default function OrderLineItemImages({ data, order }: OrderDetailsWidgetProps) {
+const OrderLineItemImages = ({ data, order }: OrderDetailsWidgetProps) => {
   const o = data ?? order;
   const items = o?.items ?? [];
   const itemsWithImage = items.filter((item) => getPreviewUrl(item));
@@ -87,7 +87,9 @@ export default function OrderLineItemImages({ data, order }: OrderDetailsWidgetP
       </div>
     </div>
   );
-}
+};
+
+export default OrderLineItemImages;
 
 export const config: WidgetConfig = {
   zone: "order.details.after",
