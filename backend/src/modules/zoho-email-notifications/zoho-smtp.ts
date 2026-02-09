@@ -57,7 +57,7 @@ export class ZohoSmtpNotificationService extends AbstractNotificationProviderSer
     const emailOptions = notification.data?.emailOptions as { subject?: string } | undefined
     const subject = emailOptions?.subject ?? 'You have a new notification'
 
-    const html = await render(emailContent)
+    const html = await render(emailContent as React.ReactElement)
 
     const transporter = nodemailer.createTransport({
       host: process.env.ZOHO_SMTP_HOST || 'smtp.zoho.com',
