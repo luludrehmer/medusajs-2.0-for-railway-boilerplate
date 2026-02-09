@@ -7,13 +7,15 @@ export default async function orderPlacedHandler({
   event: { data },
   container,
 }: SubscriberArgs<any>) {
-  const notificationModuleService: INotificationModuleService = container.resolve(Modules.NOTIFICATION)
-  const orderModuleService: IOrderModuleService = container.resolve(Modules.ORDER)
-  
-  const order = await orderModuleService.retrieveOrder(data.id, { relations: ['items', 'summary', 'shipping_address'] })
-  const shippingAddress = await (orderModuleService as any).orderAddressService_.retrieve(order.shipping_address.id)
-
+  console.log('[order-placed] event received', { orderId: data.id })
+  let order: any
   try {
+    const notificationModuleService: INotificationModuleService = container.resolve(Modules.NOTIFICATION)
+    const orderModuleService: IOrderModuleService = container.resolve(Modules.ORDER)
+    
+    order = await orderModuleService.retrieveOrder(data.id, { relations: ['items', 'summary', 'shipping_address'] })
+    const shippingAddress = await (orderModuleService as any).orderAddressService_.retrieve(order.shipping_address.id)
+
     await notificationModuleService.createNotifications({
       to: order.email,
       channel: 'email',
@@ -29,7 +31,12 @@ export default async function orderPlacedHandler({
       }
     })
   } catch (error) {
-    console.error('Error sending order confirmation notification:', error)
+    console.error('[order-placed] Error:', {
+      orderId: data.id,
+      orderEmail: order?.email,
+      errorMessage: error instanceof Error ? error.message : String(error),
+      error,
+    })
   }
 }
 
