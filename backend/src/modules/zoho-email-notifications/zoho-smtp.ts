@@ -59,14 +59,18 @@ export class ZohoSmtpNotificationService extends AbstractNotificationProviderSer
 
     const html = await render(emailContent as React.ReactElement)
 
+    const port = parseInt(process.env.ZOHO_SMTP_PORT || '465', 10)
     const transporter = nodemailer.createTransport({
       host: process.env.ZOHO_SMTP_HOST || 'smtp.zoho.com',
-      port: parseInt(process.env.ZOHO_SMTP_PORT || '587', 10),
-      secure: false,
+      port,
+      secure: port === 465,
       auth: {
         user: this.config_.user,
         pass: this.config_.pass,
       },
+      connectionTimeout: 30000,
+      greetingTimeout: 15000,
+      socketTimeout: 30000,
     })
 
     await transporter.sendMail({

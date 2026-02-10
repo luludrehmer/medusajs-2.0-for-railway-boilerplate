@@ -4,7 +4,13 @@
  * Displays previewImageUrl from line item metadata as thumbnails and links.
  * For Art Transform orders, the customer's transformed image is stored in metadata.
  *
- * Zone: order.details.after (Medusa v2 passes { data: AdminOrder })
+ * Zone: order.details.after (Medusa v2 passes props with order data).
+ *
+ * Expected API: The Admin order-detail endpoint must return the order with
+ * items (or line_items) and each item must include metadata (e.g. previewImageUrl).
+ * Custom route: api/admin/custom/orders/[id] should use relations including items
+ * so that items[].metadata is present. extractItems() supports multiple shapes:
+ * data.items, data.line_items, data.detail.items, order.items, etc.
  */
 
 
@@ -22,10 +28,11 @@ type Order = {
   item?: OrderItem[];
   line_items?: OrderItem[];
   order?: Order;
+  detail?: { items?: OrderItem[]; item?: OrderItem[]; line_items?: OrderItem[] };
 };
 
 type OrderDetailsWidgetProps = {
-  data?: Order | { order?: Order };
+  data?: Order | { order?: Order; detail?: Order['detail'] };
   order?: Order;
 };
 
@@ -44,16 +51,23 @@ function getPreviewUrl(item: OrderItem): string | undefined {
 function extractItems(raw: OrderDetailsWidgetProps): OrderItem[] {
   const d = raw.data;
   const o = raw.order;
+  const detail = d && typeof d === "object" && "detail" in d ? (d as Order).detail : undefined;
+  const root = raw as unknown as Order;
   const candidates: (OrderItem[] | undefined)[] = [
     d && typeof d === "object" && "items" in d ? (d as Order).items : undefined,
     d && typeof d === "object" && "item" in d ? (d as Order).item : undefined,
     d && typeof d === "object" && "line_items" in d ? (d as Order).line_items : undefined,
+    detail?.items,
+    detail?.line_items,
+    Array.isArray(detail?.item) ? detail?.item : undefined,
     d && typeof d === "object" && "order" in d ? (d as { order?: Order }).order?.items : undefined,
     d && typeof d === "object" && "order" in d ? (d as { order?: Order }).order?.item : undefined,
     d && typeof d === "object" && "order" in d ? (d as { order?: Order }).order?.line_items : undefined,
     o?.items,
     o?.item,
     o?.line_items,
+    Array.isArray(root?.items) ? root.items : undefined,
+    Array.isArray(root?.line_items) ? root.line_items : undefined,
   ];
   for (const arr of candidates) {
     if (Array.isArray(arr) && arr.length > 0) return arr;
@@ -64,23 +78,6 @@ function extractItems(raw: OrderDetailsWidgetProps): OrderItem[] {
 const OrderLineItemImages = (props: OrderDetailsWidgetProps) => {
   const items = extractItems(props);
   const itemsWithImage = items.filter((item) => getPreviewUrl(item));
-
-  // Debug: inspecionar props recebido pelo Admin (abrir order e ver DevTools Console)
-  console.log("[order-line-item-images] DIAG props:", {
-    propsKeys: Object.keys(props),
-    dataKeys: props.data && typeof props.data === "object" ? Object.keys(props.data) : [],
-    itemsCount: items.length,
-    itemsWithImageCount: itemsWithImage.length,
-    firstItemMeta: items[0]?.metadata,
-  });
-
-  if (items.length > 0 && itemsWithImage.length === 0) {
-    console.warn("[order-line-item-images] DIAG: items exist but none have previewImageUrl", {
-      propsKeys: Object.keys(props),
-      dataKeys: props.data && typeof props.data === "object" ? Object.keys(props.data) : [],
-      firstItemMeta: items[0]?.metadata,
-    });
-  }
 
   if (itemsWithImage.length === 0) return null;
 

@@ -67,11 +67,11 @@ export const MINIO_SECRET_KEY = process.env.MINIO_SECRET_KEY;
 export const MINIO_BUCKET = process.env.MINIO_BUCKET; // Optional, if not set bucket will be called: medusa-media
 
 /**
- * (optional) Zoho SMTP - same names as Railway vars
+ * (optional) Zoho SMTP - Replit and Railway use same names: ZOHO_SMTP_USER, ZOHO_SMTP_PASS, ZOHO_SMTP_FROM
  */
-export const ZOHO_SMTP_USER = process.env.ZOHO_SMTP_USER || process.env.ZOHO_EMAIL;
-export const ZOHO_SMTP_PASS = process.env.ZOHO_SMTP_PASS || process.env.ZOHO_PASSWORD;
-export const ZOHO_SMTP_FROM = process.env.ZOHO_SMTP_FROM || process.env.ZOHO_SMTP_USER || process.env.ZOHO_EMAIL;
+export const ZOHO_SMTP_USER = process.env.ZOHO_SMTP_USER;
+export const ZOHO_SMTP_PASS = process.env.ZOHO_SMTP_PASS;
+export const ZOHO_SMTP_FROM = process.env.ZOHO_SMTP_FROM || process.env.ZOHO_SMTP_USER;
 
 /**
  * (optional) Resend API Key and from Email - do not set if using Zoho
