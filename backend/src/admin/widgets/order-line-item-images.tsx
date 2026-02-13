@@ -122,8 +122,10 @@ const OrderLineItemImages = (props: OrderDetailsWidgetProps) => {
   );
 };
 
+import { defineWidgetConfig } from "@medusajs/admin-sdk";
+
 export default OrderLineItemImages;
 
-export const config = {
-  zone: "order.details.after" as const,
-};
+export const config = defineWidgetConfig({
+  zone: "order.details.after",
+});
